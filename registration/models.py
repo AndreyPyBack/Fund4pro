@@ -1,4 +1,5 @@
 from django.db import models
+from django.contrib.auth.models import User
 
 
 class InterestSector(models.Model):
@@ -7,9 +8,10 @@ class InterestSector(models.Model):
     def __str__(self):
         return self.name
 
+
 class Investor(models.Model):
-    username = models.CharField(max_length=30, unique=True)
-    interest_sectors = models.ManyToManyField(InterestSector, blank=True)
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='investor_profile')
+    interest_sectors = models.JSONField()
 
     INVESTMENT_CHOICES = [
         ('100000-500000', 'От 100.000 до 500.000'),
@@ -18,20 +20,14 @@ class Investor(models.Model):
     ]
 
     investment_range = models.CharField(max_length=20, choices=INVESTMENT_CHOICES)
-    email = models.EmailField(unique=True)
-    password = models.CharField(max_length=100)
-    password_confirmation = models.CharField(max_length=100)
-    receive_interesting_offers = models.BooleanField(default=False, help_text="Получать интересные предложения на почту?")
-
-
-    def __str__(self):
-        return self.username
+    receive_interesting_offers = models.BooleanField(default=False,
+                                                     help_text="Получать интересные предложения на почту?")
+    verification = models.BooleanField(default=False)
 
 
 class Businessman(models.Model):
-    username = models.CharField(max_length=30, unique=True)
-    interest_sectors = models.ManyToManyField(InterestSector, blank=True)
-
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='businessman_profile')
+    interest_sectors = models.JSONField()
 
     BUSINESSMAN_CHOICES = [
         ('no', 'Еще нет, собираюсь на вашей платформе'),
@@ -40,10 +36,5 @@ class Businessman(models.Model):
 
     business_range = models.CharField(max_length=20, choices=BUSINESSMAN_CHOICES)
     email = models.EmailField(unique=True)
-    password = models.CharField(max_length=100)
-    password_confirmation = models.CharField(max_length=100)
-    receive_interesting_offers = models.BooleanField(default=False, help_text="Получать полезные материалы по привлечению инвестицый")
-
-
-    def __str__(self):
-        return self.username
+    receive_interesting_offers = models.BooleanField(default=False,
+                                                     help_text="Получать полезные материалы по привлечению инвестицый")

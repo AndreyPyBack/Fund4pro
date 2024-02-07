@@ -1,12 +1,7 @@
-# urls.py
-from django.urls import path, include
-from rest_framework.routers import DefaultRouter
-from .views import InvestorViewSet, BusinessmanViewSet
-
-router = DefaultRouter()
-router.register(r'investors', InvestorViewSet)
-router.register(r'businessmen', BusinessmanViewSet)
+from django.urls import path
+from .views import InterestSectorListCreateAPIView, InvestorCreateAPIView
 
 urlpatterns = [
-    path('', include(router.urls)),
+    path('api/interest-sectors/', InterestSectorListCreateAPIView.as_view(), name='interest-sectors'),
+    path('api/register/investor/', InvestorCreateAPIView.as_view(), name='register-investor'),
 ]
