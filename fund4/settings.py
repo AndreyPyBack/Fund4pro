@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'users',
     'rest_framework',
     'rest_framework_jwt',
+    'drf_yasg',
 ]
 
 MIDDLEWARE = [
@@ -170,4 +171,13 @@ SIMPLE_JWT = {
     "TOKEN_BLACKLIST_SERIALIZER": "rest_framework_simplejwt.serializers.TokenBlacklistSerializer",
     "SLIDING_TOKEN_OBTAIN_SERIALIZER": "rest_framework_simplejwt.serializers.TokenObtainSlidingSerializer",
     "SLIDING_TOKEN_REFRESH_SERIALIZER": "rest_framework_simplejwt.serializers.TokenRefreshSlidingSerializer",
+    'SEND_ACTIVATION_EMAIL': True,
 }
+
+
+EMAIL_USE_TLS = True
+EMAIL_HOST = 'smtp.timeweb.cloud'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'fund4pro@schoolprojecttesting.ru'
+EMAIL_HOST_PASSWORD = 'fd8f65t9m10'
