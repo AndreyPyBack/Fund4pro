@@ -1,7 +1,5 @@
-from rest_framework import generics, status
-from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
-from .models import Investor, Businessman
+from .models import Businessman
 from .serializers import UserLoginSerializer, BusinessmanRegistrationSerializer
 from django.contrib.auth import authenticate
 from django.contrib.auth.models import User
@@ -29,10 +27,6 @@ class InvestorCreateAPIView(APIView):
                 defaults={
                     'username': serializer.validated_data['email'],
                     'password': serializer.validated_data['password'],
-                    'first_name': serializer.validated_data.get('first_name', ''),
-                    # Получаем данные о имени, если они были переданы
-                    'last_name': serializer.validated_data.get('last_name', ''),
-                    # Получаем данные о фамилии, если они были переданы
                 }
             )
             # Если пользователь уже существует, возвращаем ошибку
@@ -47,7 +41,10 @@ class InvestorCreateAPIView(APIView):
                 investment_range=serializer.validated_data['investment_range'],
                 receive_interesting_offers=serializer.validated_data['receive_interesting_offers']
             )
+            # Возвращаем успешный ответ
             return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+        # Возвращаем ошибку, если данные невалидны
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -81,19 +78,29 @@ class BusinessmanCreateAPIView(APIView):
         # Возвращаем ошибку, если данные невалидны
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-class UserLoginView(generics.GenericAPIView):
-    serializer_class = UserLoginSerializer
-
+class UserLoginView(APIView):
     def post(self, request):
-        serializer = self.serializer_class(data=request.data)
+        serializer = UserLoginSerializer(data=request.data)
         if serializer.is_valid():
-            username = serializer.validated_data['username']
+            email = serializer.validated_data['email']
             password = serializer.validated_data['password']
-            user = authenticate(username=username, password=password)
-            if user:
-                refresh = RefreshToken.for_user(user)
-                return Response({'refresh': str(refresh), 'access': str(refresh.access_token)}, status=status.HTTP_200_OK)
-            else:
-                return Response({'message': 'Неправильные учетные данные'}, status=status.HTTP_401_UNAUTHORIZED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+            # Аутентификация пользователя
+            user = authenticate(email=email, password=password)
+
+            # Проверяем, удалось ли аутентифицировать пользователя
+            if user is not None:
+                # Создаем JWT токены
+                refresh = RefreshToken.for_user(user)
+
+                # Возвращаем токены в ответе
+                return Response({
+                    'refresh': str(refresh),
+                    'access': str(refresh.access_token),
+                }, status=status.HTTP_200_OK)
+            else:
+                # Если пользователь не найден или пароль неверный, возвращаем ошибку
+                return Response({'error': 'Неверные учетные данные'}, status=status.HTTP_401_UNAUTHORIZED)
+        else:
+            # Если входные данные недопустимы, возвращаем ошибку
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

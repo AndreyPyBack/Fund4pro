@@ -37,4 +37,4 @@ class Businessman(models.Model):
     business_range = models.CharField(max_length=20, choices=BUSINESSMAN_CHOICES)
     email = models.EmailField(unique=True)
     receive_interesting_offers = models.BooleanField(default=False,
-                                                     help_text="Получать полезные материалы по привлечению инвестицый")
+                                                     help_text="Получать полезные материалы по привлечению инвестиций")
