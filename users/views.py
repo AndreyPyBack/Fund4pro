@@ -11,10 +11,6 @@ from rest_framework.views import APIView
 from .models import InterestSector, Investor
 from .serializers import InterestSectorSerializer, InvestorRegistrationSerializer
 
-from django.core.mail import send_mail
-from django.contrib.auth import get_user_model
-from rest_framework_simplejwt.tokens import RefreshToken
-
 
 class InterestSectorListCreateAPIView(APIView):
     def get(self, request):
@@ -101,26 +97,3 @@ class UserLoginView(generics.GenericAPIView):
                 return Response({'message': 'Неправильные учетные данные'}, status=status.HTTP_401_UNAUTHORIZED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-
-User = get_user_model()
-
-class SendEmailVerification(APIView):
-    def post(self, request):
-        email = request.data.get('email')
-        user = User.objects.filter(email=email).first()
-        if user:
-            # Генерация JWT токена
-            refresh = RefreshToken.for_user(user)
-            token = str(refresh.access_token)
-
-            # Отправка электронного письма с ссылкой для верификации
-            send_mail(
-                'Подтверждение почты',
-                f'Для завершения регистрации перейдите по ссылке: http://45.8.99.132/verify_email?token={token}',
-                'fund4pro@schoolprojecttesting.ru',
-                [email],
-                fail_silently=False,
-            )
-            return Response({'message': 'Email verification link sent'})
-        else:
-            return Response({'message': 'User not found'}, status=404)
