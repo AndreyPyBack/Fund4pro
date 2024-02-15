@@ -174,7 +174,7 @@ SIMPLE_JWT = {
     'SEND_ACTIVATION_EMAIL': True,
 }
 
-
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_USE_TLS = True
 EMAIL_HOST = 'smtp.timeweb.cloud'
 EMAIL_PORT = 587

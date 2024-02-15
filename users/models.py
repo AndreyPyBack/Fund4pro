@@ -22,7 +22,7 @@ class Investor(models.Model):
     investment_range = models.CharField(max_length=20, choices=INVESTMENT_CHOICES)
     receive_interesting_offers = models.BooleanField(default=False,
                                                      help_text="Получать интересные предложения на почту?")
-    verification = models.BooleanField(default=False)
+    is_email_verified = models.BooleanField(default=False)
 
 
 class Businessman(models.Model):
@@ -38,3 +38,5 @@ class Businessman(models.Model):
     email = models.EmailField(unique=True)
     receive_interesting_offers = models.BooleanField(default=False,
                                                      help_text="Получать полезные материалы по привлечению инвестиций")
+
+    is_email_verified = models.BooleanField(default=False)

@@ -12,6 +12,12 @@ from .models import InterestSector, Investor
 from .serializers import InterestSectorSerializer, InvestorRegistrationSerializer
 
 
+
+import jwt
+from django.conf import settings
+from datetime import datetime, timedelta
+from django.core.mail import send_mail
+
 class InterestSectorListCreateAPIView(APIView):
     def get(self, request):
         sectors = InterestSector.objects.all()
@@ -97,3 +103,33 @@ class UserLoginView(generics.GenericAPIView):
                 return Response({'message': 'Неправильные учетные данные'}, status=status.HTTP_401_UNAUTHORIZED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+
+class VerifyEmail(APIView):
+    def post(self, request):
+        token = request.data.get('token')
+        try:
+            payload = jwt.decode(token, settings.SECRET_KEY, algorithms=['HS256'])
+            user = User.objects.get(id=payload['user_id'], is_email_verified=False)
+            user.is_email_verified = True
+            user.save()
+            return Response({'message': 'Email successfully verified'}, status=status.HTTP_200_OK)
+        except jwt.ExpiredSignatureError:
+            return Response({'error': 'Verification link expired'}, status=status.HTTP_400_BAD_REQUEST)
+        except (jwt.DecodeError, User.DoesNotExist):
+            return Response({'error': 'Invalid token or user not found'}, status=status.HTTP_400_BAD_REQUEST)
+def generate_verification_token(user_id):
+    token = jwt.encode({
+        'user_id': user_id,
+        'exp': datetime.utcnow() + timedelta(hours=24)  # Токен действителен 24 часа
+    }, settings.SECRET_KEY, algorithm='HS256')
+    return token
+def send_verification_email(user):
+    token = generate_verification_token(user.id)
+    subject = 'Подтверждение адреса электронной почты'
+    message = f'Привет {user.username},\n\n' \
+              f'Пожалуйста, подтвердите ваш адрес электронной почты, перейдя по следующей ссылке:\n' \
+              f'http://fund4pro@schoolprojecttesting.ru/verify-email/?token={token}\n\n' \
+              'С уважением,\nКоманда сайта'
+    email_from = settings.EMAIL_HOST_USER
+    recipient_list = [user.email]
+    send_mail(subject, message, email_from, recipient_list)
